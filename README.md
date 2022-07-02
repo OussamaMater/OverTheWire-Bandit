@@ -129,3 +129,97 @@ bandit5@bandit:~/inhere$ find . -readable -size 1033c ! -executable
 bandit5@bandit:~/inhere$ cat ./maybehere07/.file2
 [REDACTED]
 ```
+## Level 6 → 7
+### Explanation
+Similar to the previous challenge, we need to look for a file, but this time, across the system, the file has these unique properties:
+1. owned by user bandit7
+2. owned by group bandit6
+3. 33 bytes in size
+
+The "find" command for the rescue!
+### Solution
+```bash
+bandit6@bandit:~$ ls
+bandit6@bandit:~$ find / -user bandit7 -group bandit6 -size 33c 2>/dev/null
+/var/lib/dpkg/info/bandit7.password
+bandit6@bandit:~$ cat /var/lib/dpkg/info/bandit7.password
+[REDACTED]
+```
+## Level 7 → 8
+### Explanation
+This challenge requires us to filter a big text file by grabbing a specific word.
+\
+The "grep" command is suitable for the job.
+
+### Solution
+```bash
+bandit7@bandit:~$ ls
+data.txt
+bandit7@bandit:~$ cat data.txt | grep "millionth"
+millionth       [REDACTED]
+bandit7@bandit:~$
+
+
+```
+## Level 8 → 9
+### Explanation
+Similar to the previous challenge, we need to filter a big text file, the line we are looking for is the only line that occurs once, so we need to remove all the duplicates and echo out the content.
+### Solution
+```bash
+bandit8@bandit:~$ ls
+data.txt
+bandit8@bandit:~$ sort data.txt | uniq -u
+[REDACTED]
+```
+## Level 9 → 10
+### Explanation
+Still the same style as the previous one, to get the password we need to do some kind of filtering.
+\
+In this challenge, the password we are looking for is in one of the few _human-readable_ strings, preceded by several = characters.
+\
+We will create our first very simple _regular expression_ (a pattern) to get all words preceded by at least one =.
+\
+Regular Expressions are so interesting and a great skill to have, here are some resources:
+\
+[Read More - Article 1](https://www.linux.com/topic/desktop/introduction-regular-expressions-new-linux-users/)
+\
+[Read More - Article 2](https://ubuntu.com/blog/regex-basics)
+\
+[Read More - Article 3](https://www.geeksforgeeks.org/how-to-use-regular-expressions-regex-on-linux)
+\
+[Read More - Video](https://www.youtube.com/watch?v=ZfQFUJhPqMM)
+
+### Solution
+```bash
+bandit9@bandit:~$ ls
+data.txt
+bandit9@bandit:~$ strings data.txt | grep "=.*"
+========== the*2i\"4
+=:G e
+========== password
+<I=zsGi
+Z)========== is
+A=|t&E
+Zdb=
+c^ LAh=3G
+*SF=s
+&========== [REDACTED]
+S=A.H&^
+```
+## Level 10 → 11
+### Explanation
+This time, there is no filtering, the challenge is straight forward, all we need to do is decoding the _base64_ text.
+\
+If you've never heard about this encoding, or what bases are, I highly recommend reading these articles:
+\
+[Read More - Article](https://code.tutsplus.com/tutorials/base-what-a-practical-introduction-to-base-encoding--net-27590)
+\
+[Read More - Article](https://www.base64encoder.io/learn/)
+
+### Solution
+```bash
+bandit10@bandit:~$ ls
+data.txt
+bandit10@bandit:~$ cat data.txt | base64 -d
+The password is [REDACTED]
+```
