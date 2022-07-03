@@ -223,3 +223,93 @@ data.txt
 bandit10@bandit:~$ cat data.txt | base64 -d
 The password is [REDACTED]
 ```
+## Level 11 → 12
+### Explanation
+In this challenge the file content have been rotated by 13 positions, it's a common encryption called _rot13_ which replaces a letter with the 13th etter after it in the alphabet.
+\
+We can simply use the "tr" command and replace one set of alphabet with another set.
+\
+I highly recommend reading more about the tr command:
+\
+[Read More - Article](https://www.geeksforgeeks.org/tr-command-in-unix-linux-with-examples/)
+\
+And about the common substitution encryption methods:
+\
+[Read More - Article](http://practicalcryptography.com/ciphers/substitution-category/)
+
+### Solution
+```bash
+bandit11@bandit:~$ cat data.txt | tr 'A-Za-z' 'N-ZA-Mn-za-m'
+The password is [REDACTED]
+```
+## Level 12 → 13
+### Explanation
+This task is simple, but so repetitive, we have a Hex Dump that should be reverse engineered to a binary, and we start the decompression journey.
+\
+Note that in the solution I went quick, to know what decompression you are going for, use the "file" command as we learned in the previous challenges.
+### Solution
+```bash
+bandit12@bandit:~$ mkdir /tmp/oussama
+bandit12@bandit:~$ cd /tmp/oussama
+bandit12@bandit:/tmp/oussama$ cp ~/data.txt .
+bandit12@bandit:/tmp/oussama$ xxd -r data > binary
+bandit12@bandit:/tmp/oussama$ mv binary binary.gz # we need that suffix for the command to work
+bandit12@bandit:/tmp/oussama$ gzip -d binary.gz
+bandit12@bandit:/tmp/oussama$ bzip2 -d binary
+bandit12@bandit:/tmp/oussama$ mv binary.out binary.gz
+bandit12@bandit:/tmp/oussama$ gzip -d binary.gz
+bandit12@bandit:/tmp/oussama$ tar -xf binary
+bandit12@bandit:/tmp/oussama$ tar -xf data5.bin
+bandit12@bandit:/tmp/oussama$ bzip2 -d data6.bin 2>/dev/null
+bandit12@bandit:/tmp/oussama$ tar -xf data6.bin.out
+bandit12@bandit:/tmp/oussama$ mv data8.bin data8.gz
+bandit12@bandit:/tmp/oussama$ gzip -d data8.gz
+bandit12@bandit:/tmp/oussama$ cat data8
+The password is [REDACTED]
+```
+## Level 13 → 14
+### Explanation
+Well this has to be one of the easiest tasks, as we are given the ssh private key.
+\
+All these challenges we've been using the _password_ to login, but this is only an option, as we can use the private key instead, and that's exactly what we've done here.
+Read more about the two authentication methods:
+\
+[Read More - Article](https://www.appviewx.com/education-center/ssh-authentication-methods/)
+### Solution
+```bash
+bandit13@bandit:~$ ssh -i sshkey.private bandit14@localhost
+```
+## Level 14 → 15
+### Explanation
+To get the next password, we need to submit the current password to a service running on port 30000.
+\
+This can be done by using "netcat" command.
+\
+If you are planning on playing CTFs I highly recommend learning this command and how it works as it can be so handy.
+\
+[Read More - Article](https://linuxize.com/post/netcat-nc-command-with-examples/)
+### Solution
+```bash
+bandit14@bandit:~$ cat /etc/bandit_pass/bandit14
+[REDACTED - current password]
+bandit14@bandit:~$ nc 127.0.0.1 30000
+[REDACTED - current password] # simply paste the bandit14's password and hit enter
+Correct!
+[REDACTED - password for the next level]
+```
+## Level 15 → 16
+### Explanation
+It is almost the same challenge, the only difference is that server running this service is using SSL.
+\
+You can read more about SSL here:
+\
+[Read More - Article](https://www.websecurity.digicert.com/security-topics/what-is-ssl-tls-https)
+### Solution
+```bash
+bandit15@bandit:~$ cat /etc/bandit_pass/bandit15
+[REDACTED - current password]
+bandit15@bandit:~$ ncat -C --ssl 127.0.0.1 30001
+[REDACTED - current password]
+Correct!
+[REDACTED - password for the next level]
+```
