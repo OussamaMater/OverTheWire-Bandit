@@ -313,3 +313,101 @@ bandit15@bandit:~$ ncat -C --ssl 127.0.0.1 30001
 Correct!
 [REDACTED - password for the next level]
 ```
+## Level 16 → 17
+### Explanation
+This challenge will test what we learned in the previous ones, we need to locate all the services running in a specific range, then connect to each one of them, submit the current password, and get a private key that will eventually help us get the wanted password.
+### Solution
+```bash
+bandit16@bandit:~$ nmap -p 31000-32000 127.0.0.1
+Starting Nmap 7.40 ( https://nmap.org ) at 2022-07-04 11:39 CEST
+Nmap scan report for localhost (127.0.0.1)
+Host is up (0.00022s latency).
+Not shown: 996 closed ports
+PORT      STATE    SERVICE
+31046/tcp open     unknown
+31518/tcp filtered unknown
+31691/tcp open     unknown
+31790/tcp open     unknown
+31960/tcp open     unknown
+
+Nmap done: 1 IP address (1 host up) scanned in 1.25 seconds
+bandit16@bandit:~$ cat /etc/bandit_pass/bandit16 | openssl s_client -quiet -connect 127.0.0.1:31790
+depth=0 CN = localhost
+verify error:num=18:self signed certificate
+verify return:1
+depth=0 CN = localhost
+verify return:1
+Correct!
+-----BEGIN RSA PRIVATE KEY-----
+[REDACTED]
+-----END RSA PRIVATE KEY-----
+bandit16@bandit:~$ mkdir /tmp/oussama
+bandit16@bandit:~$ cd /tmp/oussama
+bandit16@bandit:/tmp/oussama$ nano id_rsa # paste the content and hit ctrl+o then ctrl+x
+bandit16@bandit:/tmp/oussama$ chmod 600 id_rsa
+bandit16@bandit:/tmp/oussama$ ssh -i id_rsa bandit17@localhost
+bandit17@bandit:~$ cat /etc/bandit_pass/bandit17
+[REDACTED]
+```
+## Level 17 → 18
+### Explanation
+This challenge is straightforward, we have two files (passwords.old, passwords.new), the password for the next level is in passwords.new and is the only line that has been changed between the two files.
+### Solution
+```bash
+bandit17@bandit:~$ diff passwords.old passwords.new
+42c42
+< w0Yfolrc5bwjS4qw5mq1nnQi6mF03bii
+---
+> [REDACTED]
+```
+
+## Level 18 → 19
+### Explanation
+In this challenge we are logged out as soon as we log in, the password is saved in a file called "readme" in the home directory, so we can simply echo out the content without connecting.
+\
+We are executing commands over ssh, this article can be useful:
+\
+[Read More - Article](https://www.cyberciti.biz/faq/unix-linux-execute-command-using-ssh/)
+### Solution
+```bash
+oussama@oussama:~$ ssh bandit18@bandit.labs.overthewire.org -p 2220 'cat ~/readme'
+This is a OverTheWire game server. More information on http://www.overthewire.org/wargames
+
+bandit18@bandit.labs.overthewire.orgs password:
+[REDACTED]
+```
+## Level 19 → 20
+### Explanation
+In this challenge, we will learn about the "setuid" (set user ID) which is a special type of file permission when set a user may execute the binary with a level of access that matches the user who owns the file.
+\
+[Read More - Article](https://www.computerhope.com/jargon/s/setuid.htm)
+### Solution
+```bash
+bandit19@bandit:~$ ls
+bandit20-do
+bandit19@bandit:~$ ./bandit20-do
+Run a command as another user.
+  Example: ./bandit20-do id
+bandit19@bandit:~$ ./bandit20-do cat /etc/bandit_pass/bandit20
+[REDACTED]
+```
+## Level 20 → 21
+### Explanation
+In this challenge we are given a binary that has a setuid (like the previous challenge), this binary needs a port as an argument, it will connect to the service running on that port, reads the current password, if it matches, it will provide the next password.
+\
+So we need to create a service that when connected to, provides the current password, and run it in the background so continue using our session.
+### Solution
+```bash
+bandit20@bandit:~$ ls
+suconnect
+bandit20@bandit:~$ ./suconnect
+Usage: ./suconnect <portnumber>
+This program will connect to the given port on localhost using TCP. If it receives the correct password from the other side, the next password is transmitted back.
+bandit20@bandit:~$ echo "[REDACTED - Current Password]" | netcat -lp 4444 &
+[1] 15831
+bandit20@bandit:~$ ./suconnect 4444
+Read: [REDACTED - Current Password]
+Password matches, sending next password
+[REDACTED - New Password]
+[1]+  Done echo "[REDACTED - Current Password]" | netcat -lp 4444
+```
