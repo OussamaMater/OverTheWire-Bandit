@@ -594,3 +594,326 @@ bandit25@bandit:~$ # we can use vim to spawn a shell, (make sure you are in comm
 bandit26@bandit:~$ cat /etc/bandit_pass/bandit26
 [REDACTED]
 ```
+## Level 26 → 27
+### Explanation
+This challenge is pretty easy, we have a binary with that special file permission we discussed "setuid", so whenever executed it runs as the next level user, this way we can simply echo out the password.
+### Solution
+```bash
+bandit26@bandit:~$ ls
+bandit27-do  text.txt
+bandit26@bandit:~$ ./bandit27-do
+Run a command as another user.
+  Example: ./bandit27-do id
+bandit26@bandit:~$ ./bandit27-do cat /etc/bandit_pass/bandit27
+[REDACTED]
+```
+## Level 27 → 28
+### Explanation
+In this challenge, we will practice our git skills, so we are given a remote repository that we need to clone and explore.
+\
+This level requires some knowledge of what and how "git" works, I highly recommend reading these two articles to get you started:
+\
+[Read More - Article](https://www.w3schools.com/git/)
+\
+[Read More - Article](https://www.atlassian.com/git)
+### Solution
+```bash
+bandit27@bandit:~$ cd /tmp
+bandit27@bandit:/tmp$ mkdir oussamalevel27
+bandit27@bandit:/tmp$ cd oussamalevel27
+bandit27@bandit:/tmp/oussamalevel27$ git clone ssh://bandit27-git@localhost/home/bandit27-git/repo
+Cloning into 'repo'...
+Could not create directory '/home/bandit27/.ssh'.
+The authenticity of host 'localhost (127.0.0.1)' cant be established.
+ECDSA key fingerprint is SHA256:98UL0ZWr85496EtCRkKlo20X3OPnyPSB5tB5RPbhczc.
+Are you sure you want to continue connecting (yes/no)? yes
+Failed to add the host to the list of known hosts (/home/bandit27/.ssh/known_hosts).
+This is a OverTheWire game server. More information on http://www.overthewire.org/wargames
+
+bandit27-git@localhost password: # same password as bandit27
+remote: Counting objects: 3, done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 0), reused 0 (delta 0)
+Receiving objects: 100% (3/3), done.
+bandit27@bandit:/tmp/oussamalevel27$ ls
+repo
+bandit27@bandit:/tmp/oussamalevel27$ cd repo/
+bandit27@bandit:/tmp/oussamalevel27/repo$ ls
+README
+bandit27@bandit:/tmp/oussamalevel27/repo$ cat README
+The password to the next level is: [REDACTED]
+```
+## Level 28 → 29
+### Explanation
+Still practising our git skills, this time we need to go one step back to get the password.
+\
+This book will help you understand most of the git commands and the need for each one of them:
+\
+[Read More - Book](https://books.goalkicker.com/GitBook/)
+
+### Solution
+```bash
+bandit28@bandit:~$ cd /tmp
+bandit28@bandit:/tmp$ mkdir oussamalevel28
+bandit28@bandit:/tmp$ cd oussamalevel28
+bandit28@bandit:/tmp/oussamalevel28$ git clone ssh://bandit28-git@localhost/home/bandit28-git/repo
+Cloning into 'repo'...
+Could not create directory '/home/bandit28/.ssh'.
+The authenticity of host 'localhost (127.0.0.1)' cant be established.
+ECDSA key fingerprint is SHA256:98UL0ZWr85496EtCRkKlo20X3OPnyPSB5tB5RPbhczc.
+Are you sure you want to continue connecting (yes/no)? yes
+Failed to add the host to the list of known hosts (/home/bandit28/.ssh/known_hosts).
+This is a OverTheWire game server. More information on http://www.overthewire.org/wargames
+
+bandit28-git@localhosts password:
+remote: Counting objects: 9, done.
+remote: Compressing objects: 100% (6/6), done.
+remote: Total 9 (delta 2), reused 0 (delta 0)
+Receiving objects: 100% (9/9), done.
+Resolving deltas: 100% (2/2), done.
+bandit28@bandit:/tmp/oussamalevel28$ cd repo/
+bandit28@bandit:/tmp/oussamalevel28/repo$ ls
+README.md
+bandit28@bandit:/tmp/oussamalevel28/repo$ cat README.md
+# Bandit Notes
+Some notes for level29 of bandit.
+
+## credentials
+
+- username: bandit29
+- password: xxxxxxxxxx
+
+bandit28@bandit:/tmp/oussamalevel28/repo$ git log
+commit edd935d60906b33f0619605abd1689808ccdd5ee
+Author: Morla Porla <morla@overthewire.org>
+Date:   Thu May 7 20:14:49 2020 +0200
+
+    fix info leak
+
+commit c086d11a00c0648d095d04c089786efef5e01264
+Author: Morla Porla <morla@overthewire.org>
+Date:   Thu May 7 20:14:49 2020 +0200
+
+    add missing data
+
+commit de2ebe2d5fd1598cd547f4d56247e053be3fdc38
+Author: Ben Dover <noone@overthewire.org>
+Date:   Thu May 7 20:14:49 2020 +0200
+
+    initial commit of README.md
+bandit28@bandit:/tmp/oussamalevel28/repo$ git checkout c086d11a00c0648d095d04c089786efef5e01264
+Note: checking out 'c086d11a00c0648d095d04c089786efef5e01264'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b <new-branch-name>
+
+HEAD is now at c086d11... add missing data
+bandit28@bandit:/tmp/oussamalevel28/repo$ cat README.md
+# Bandit Notes
+Some notes for level29 of bandit.
+
+## credentials
+
+- username: bandit29
+- password: [REDACTED]
+```
+## Level 29 → 30
+### Explanation
+Still with the git challenges, this time we will play around with branches.
+\
+Every concept is well explained in the book above (previous challenge), but still, if you do want a quick article here is
+[one](https://www.atlassian.com/git/tutorials/using-branches) and here is an 
+[interactive tutorial](https://learngitbranching.js.org/) as well.
+### Solution
+```bash
+bandit29@bandit:~$ mkdir /tmp/oussamalevel29
+bandit29@bandit:~$ cd /tmp/oussamalevel29
+bandit29@bandit:/tmp/oussamalevel29$ git clone ssh://bandit29-git@localhost/home/bandit29-git/repo
+Cloning into 'repo'...
+Could not create directory '/home/bandit29/.ssh'.
+The authenticity of host 'localhost (127.0.0.1)' cant be established.
+ECDSA key fingerprint is SHA256:98UL0ZWr85496EtCRkKlo20X3OPnyPSB5tB5RPbhczc.
+Are you sure you want to continue connecting (yes/no)? yes
+Failed to add the host to the list of known hosts (/home/bandit29/.ssh/known_hosts).
+This is a OverTheWire game server. More information on http://www.overthewire.org/wargames
+
+bandit29-git@localhosts password:
+remote: Counting objects: 16, done.
+remote: Compressing objects: 100% (11/11), done.
+remote: Total 16 (delta 2), reused 0 (delta 0)
+Receiving objects: 100% (16/16), done.
+Resolving deltas: 100% (2/2), done.
+bandit29@bandit:/tmp/oussamalevel29$ ls
+README.md
+bandit29@bandit:/tmp/oussamalevel29$ cat README.md
+# Bandit Notes
+Some notes for bandit30 of bandit.
+
+## credentials
+
+- username: bandit30
+- password: <no passwords in production!>
+bandit29@bandit:/tmp/oussamalevel29$ git branch -r # listing only the remote branches, you can use -a as well
+  origin/HEAD -> origin/master
+  origin/dev
+  origin/master
+  origin/sploits-dev
+bandit29@bandit:/tmp/oussamalevel29$ git checkout dev
+Branch dev set up to track remote branch dev from origin.
+Switched to a new branch 'dev'
+bandit29@bandit:/tmp/oussamalevel29$ ls
+code  README.md
+bandit29@bandit:/tmp/oussamalevel29$ cat README.md
+# Bandit Notes
+Some notes for bandit30 of bandit.
+
+## credentials
+
+- username: bandit30
+- password: [REDACTED]
+```
+## Level 30 → 31
+### Explanation
+Well, we are still doing git challenges, and in this one, we will learn about "tags".
+\
+Sometimes, when a commit is an import change, we may want to bookmark it, give it a label/alias, just to mark that progress in code, for example name it "v1.0", to do so, we use tags.
+\
+In simple words, tags are labels that can be used to identify a specific commit.
+\
+I highly recommend reading more about tags:
+\
+[Read More - Article](https://linuxhint.com/use-git-tags/)
+\
+[Read More - Article](https://www.atlassian.com/git/tutorials/inspecting-a-repository/git-tag)
+\
+[Read More - Article](https://www.freecodecamp.org/news/git-tag-explained-how-to-add-remove/)
+\
+And the book I shared in the previous challenges.
+### Solution
+```bash
+bandit29@bandit:~$ mkdir /tmp/oussamalevel30 && cd $_
+bandit30@bandit:/tmp/oussamalevel30$ git clone ssh://bandit30-git@localhost/home/bandit30-git/repo
+Cloning into 'repo'...
+Could not create directory '/home/bandit30/.ssh'.
+The authenticity of host 'localhost (127.0.0.1)' cant be established.
+ECDSA key fingerprint is SHA256:98UL0ZWr85496EtCRkKlo20X3OPnyPSB5tB5RPbhczc.
+Are you sure you want to continue connecting (yes/no)? yes
+Failed to add the host to the list of known hosts (/home/bandit30/.ssh/known_hosts).
+This is a OverTheWire game server. More information on http://www.overthewire.org/wargames
+
+bandit30-git@localhosts password:
+remote: Counting objects: 4, done.
+remote: Total 4 (delta 0), reused 0 (delta 0)
+Receiving objects: 100% (4/4), done.
+bandit30@bandit:/tmp/oussamalevel30$ cd repo/
+bandit30@bandit:/tmp/oussamalevel30/repo$ git tag
+secret
+bandit30@bandit:/tmp/oussamalevel30/repo$ git show secret
+[REDACTED]
+```
+## Level 31 → 32
+### Explanation
+This is the last "git" challenge, we need to push a txt file with a specific name and content.
+\
+But, there is a ".gitignore" file that ignores all txt files, so we need to get rid of it.
+\
+This file is really useful in our projects, so maybe read this article:
+\
+[Read More - Article](https://www.pluralsight.com/guides/how-to-use-gitignore-file)
+
+### Solution
+```bash
+bandit31@bandit:~$ mkdir /tmp/oussamalevel31 && cd clear
+bandit31@bandit:/tmp/oussamalevel31$ git clone ssh://bandit31-git@localhost/home/bandit31-git/repo
+Cloning into 'repo'...
+Could not create directory '/home/bandit31/.ssh'.
+The authenticity of host 'localhost (127.0.0.1)' cant be established.
+ECDSA key fingerprint is SHA256:98UL0ZWr85496EtCRkKlo20X3OPnyPSB5tB5RPbhczc.
+Are you sure you want to continue connecting (yes/no)? yes
+Failed to add the host to the list of known hosts (/home/bandit31/.ssh/known_hosts).
+This is a OverTheWire game server. More information on http://www.overthewire.org/wargames
+
+bandit31-git@localhosts password:
+remote: Counting objects: 4, done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 4 (delta 0), reused 0 (delta 0)
+Receiving objects: 100% (4/4), 383 bytes | 0 bytes/s, done.
+bandit31@bandit:/tmp/oussamalevel31$ cd repo/
+bandit31@bandit:/tmp/oussamalevel31/repo$ ls
+README.md
+bandit31@bandit:/tmp/oussamalevel31/repo$ cat README.md
+This time your task is to push a file to the remote repository.
+
+Details:
+    File name: key.txt
+    Content: 'May I come in?'
+    Branch: master
+
+bandit31@bandit:/tmp/oussamalevel31/repo$ cat .gitignore
+*.txt
+bandit31@bandit:/tmp/oussamalevel31/repo$ rm .gitignore
+bandit31@bandit:/tmp/oussamalevel31/repo$ echo 'May I come in?' > key.txt
+bandit31@bandit:/tmp/oussamalevel31/repo$ git add .
+bandit31@bandit:/tmp/oussamalevel31/repo$ git commit -m 'Added key.txt'
+[master f312353] Added key.txt
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ delete mode 100644 .gitignore
+ create mode 100644 key.txt
+bandit31@bandit:/tmp/oussamalevel31/repo$ git push origin master
+Could not create directory '/home/bandit31/.ssh'.
+The authenticity of host 'localhost (127.0.0.1)' cant be established.
+ECDSA key fingerprint is SHA256:98UL0ZWr85496EtCRkKlo20X3OPnyPSB5tB5RPbhczc.
+Are you sure you want to continue connecting (yes/no)? yes
+Failed to add the host to the list of known hosts (/home/bandit31/.ssh/known_hosts).
+This is a OverTheWire game server. More information on http://www.overthewire.org/wargames
+
+bandit31-git@localhosts password:
+Counting objects: 3, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (3/3), 289 bytes | 0 bytes/s, done.
+Total 3 (delta 0), reused 0 (delta 0)
+remote: ### Attempting to validate files... ####
+remote:
+remote: .oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.
+remote:
+remote: Well done! Here is the password for the next level:
+remote: [56a9bf19c63d650ce78e6ec0354ee45e]
+remote:
+remote: .oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.
+remote:
+To ssh://localhost/home/bandit31-git/repo
+ ! [remote rejected] master -> master (pre-receive hook declined)
+error: failed to push some refs to 'ssh://bandit31-git@localhost/home/bandit31-git/repo'
+```
+## Level 32 → 33
+### Explanation
+This is the last challenge, where we need to escape a special shell that executes any given command as uppercase, and as you know a binary's name is case sensitive, so "ls" is different from "LS".
+\
+Well, the idea here is to use something that won't be affected by this conversion.
+\
+After some Googling, I found out that there is a special environment variable that stores the path to the shell so it stores "/bin/sh" or "/bin/bash" depending on shell being used, so the idea is to pass the "$0" and hope it re-executes the shell.
+\
+Some helpful resources:
+\
+[Read More - Discussion](https://unix.stackexchange.com/questions/280454/what-is-the-meaning-of-0-in-the-bash-shell)
+\
+[Read More - Article](https://bash.cyberciti.biz/guide/$0)
+### Solution
+```bash
+WELCOME TO THE UPPERCASE SHELL
+>> ls
+sh: 1: LS: not found
+>> $0
+$ ls -l
+total 8
+-rwsr-x--- 1 bandit33 bandit32 7556 May  7  2020 uppershell
+$ whoami
+bandit33
+```
